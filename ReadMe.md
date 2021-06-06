@@ -1,18 +1,15 @@
-# ts-esm-babel-template
-Because I don't want to look up the preset-env arguments<br/>
-and guess for two hours until getting it right, again.
+# crystalforest
+Source code for my [grakkit enabled](https://github.com/grakkit/grakkit) mc server
 
-## Function
-This repo is set up to use babel 7^<br/>
-to compile typescript to javascript esmodules<br/>
+## Classes
+- Persist : persistent storage class
+- FileHelper : handling string/Uint8Array/Json files without java
+- PseudoCmd : Writing commands that start with `-` to avoid permissions, simplier to prototype, etc
 
+## Building
 Simply run:
+`npm install`
+then
 `npm run build` or `./build.sh`
 
-File copy is set up as well.
-
-`src/index.ts` -> `lib/index.js`<br/>
-`src/index.html` -> `lib/index.html`
-
-If you feel this template could be made better,<br/>
-submit a PR and I'll merge if its pretty + works :)
+Source code goes in your `/plugins/grakkit/` directory
