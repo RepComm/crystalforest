@@ -4,8 +4,7 @@ const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
 const GameMode = stdlib.type("org.bukkit.GameMode");
 
 //--------Any player sets day when sleep
-import { anybedday } from "./anybedday.js";
-anybedday();
+import "./anybedday.js";
 
 //--------Build mode
 import { BuildModeManager } from "./buildmode.js";
@@ -45,3 +44,6 @@ stdlib.command({
     sentries.create(player.getLocation(), player.getName());
   }
 });
+
+//--------Sorter Hopper
+import "./blocks/sorter.js";

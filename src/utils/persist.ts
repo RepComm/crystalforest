@@ -3,7 +3,6 @@ const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
 
 const Paths = stdlib.type("java.nio.file.Paths");
 const File = stdlib.type("java.io.File");
-// const FileOutputStream = stdlib.type("java.io.FileOutputStream");
 
 function stringToUint8Array(str: string): Uint8Array {
   let result = new Uint8Array(str.length);
@@ -50,7 +49,6 @@ function stringFromUint8Array(array: Uint8Array) {
 import { FileHelper } from "./filehelper.js";
 
 export class Persist {
-  private
   static SINGLETON: Persist;
   static get(): Persist {
     if (!Persist.SINGLETON) Persist.SINGLETON = new Persist();

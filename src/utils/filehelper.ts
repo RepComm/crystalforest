@@ -1,4 +1,3 @@
-import { resolve } from "node:path";
 
 const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
 
