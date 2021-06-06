@@ -1,6 +1,5 @@
 
-// import * as stdlib from "@grakkit/server";
-const stdlib = require('@grakkit/server');
+const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
 
 import { ButtonFrame } from "./tools/buttonframe.js";
 
@@ -24,21 +23,21 @@ function makeLoc (x: number, y: number, z: number, worldName: string = "world"):
   return result;
 }
 
-ButtonFrame.register(
-  //Location
-  makeLoc(56, 169, -163),
+// ButtonFrame.register(
+//   //Location
+//   makeLoc(56, 169, -163),
 
-  //Facing direction
-  IBlockFace.SOUTH,
+//   //Facing direction
+//   IBlockFace.SOUTH,
 
-  //Function that executes on frame click
-  (player, button, frame)=>{
-    let item = frame.getItem();
-    if (!item || item.getType().equals(IMaterial.AIR)) return;
-    player.sendRawMessage("Beware the sun, icarus");
-    player.getInventory().addItem(item.clone());
-  }
-);
+//   //Function that executes on frame click
+//   (player, button, frame)=>{
+//     let item = frame.getItem();
+//     if (!item || item.getType().equals(IMaterial.AIR)) return;
+//     player.sendRawMessage("Beware the sun, icarus");
+//     player.getInventory().addItem(item.clone());
+//   }
+// );
 
 const MIN_ELYTRA_CLIMB_SPEED = 0.8;
 const IcarusBootsParticle = IParticle.SPELL;

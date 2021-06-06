@@ -1,7 +1,6 @@
 
-/**@type {import("@grakkit/server")}*/
-const stdlib = require("@grakkit/server");
-// import * as stdlib from "@grakkit/server";
+const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+
 
 const Player = stdlib.type("org.bukkit.entity.Player");
 type PlayerT = InstanceType<typeof Player>;
@@ -11,9 +10,15 @@ interface PseudoCmdCallback {
 }
 
 export class PseudoCmd {
+  static SINGETON: PseudoCmd;
   private registeredCommands: Map<string, PseudoCmdCallback>;
 
-  constructor () {
+  static get (): PseudoCmd {
+    if (!PseudoCmd.SINGETON) PseudoCmd.SINGETON = new PseudoCmd();
+    return PseudoCmd.SINGETON;
+  }
+
+  private constructor () {
     this.registeredCommands = new Map();
     stdlib.event("org.bukkit.event.player.AsyncPlayerChatEvent", (evt)=>{
       let player = evt.getPlayer();

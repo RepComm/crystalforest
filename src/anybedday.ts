@@ -1,6 +1,5 @@
 
-const stdlib = require("@grakkit/server");
-// import * as stdlib from "@grakkit/server";
+const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
 
 let isEnabled = false;
 /**
