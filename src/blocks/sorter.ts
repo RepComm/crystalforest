@@ -66,7 +66,7 @@ stdlib.event("org.bukkit.event.inventory.InventoryMoveItemEvent", (event) => {
   }
   if (space) {
     item.setAmount(1);
-    console.log(item);
+    // console.log(item);
     setTimeout(() => {
       const contents = source.getContents();
       const transfer = source.containsAtLeast(item, 1);

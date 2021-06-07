@@ -32,7 +32,12 @@ export class PseudoCmd {
       if (this.hasCommand(primary)) {
         let cb = this.getCommand(primary);
         let argsAsString = msg.substring(term+1);
-        cb(player, primary, argsAsString);
+
+        //Should fix some async chat actions bs
+        stdlib.task.timeout(()=>{
+          cb(player, primary, argsAsString);
+        }, 1);
+        
         evt.setCancelled(true);
       }
     });

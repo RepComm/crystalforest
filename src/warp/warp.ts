@@ -2,8 +2,12 @@
 
 const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
 
+const Mob = stdlib.type("org.bukkit.entity.Mob");
+const EntityType = stdlib.type("org.bukkit.entity.EntityType");
+
 import { PseudoCmd } from "../pseudocmd.js";
 import { Persist } from "../utils/persist.js";
+import { Message } from "../utils/message.js";
 
 let cmdr = PseudoCmd.get();
 let sender = stdlib.server.getConsoleSender();
@@ -111,23 +115,132 @@ cmdr.register("warpset", (player, primary, argsAsString) => {
 cmdr.register("warp", (player, primary, argsAsString) => {
   let args = argsAsString.split(" ");
 
-  if (args.length !== 2) {
-    player.sendRawMessage("Expected : -warp <selector> <destination>");
+  if (args.length < 1) {
+    Message.player(player, "Expected : -warp [selector] <destination>");
     return;
   }
 
-  let selector = args[0];
-  let destination = args[1];
+  let destination: string;
+  let selector: string;
+
+  if (args.length == 1) {
+    destination = args[0];
+    selector = player.getName();
+  } else {
+    selector = args[0];
+    destination = args[1];
+  }
+
 
   if (!warp.hasDest(destination)) {
-    player.sendRawMessage(`No warp is identified by '${destination}', add it with -warpset <name>`);
+    Message.player(player, "No warp is identified by", destination, ", add it with -warpset", destination);
     return;
   }
   let dest = warp.getDest(destination);
 
-  player.sendRawMessage(`warp to ${destination}: ${dest.x}, ${dest.y}, ${dest.z}`);
+  Message.player(player, "warp to", destination, dest.x, dest.y, dest.z);
 
   stdlib.task.timeout(()=>{
     stdlib.server.dispatchCommand(sender, `tp ${selector} ${dest.x.toFixed(1)} ${dest.y.toFixed(1)} ${dest.z.toFixed(1)}`);
   }, 1);
+});
+
+cmdr.register("warplist", (player, primary, argsAsString)=>{
+  let msg = warp.getDestList().join("\n");
+  Message.player(player, msg);
+});
+
+cmdr.register("name", (player, primary, argsAsString)=>{
+  // let args = argsAsString.split(" ");
+  // if (args.length < 1) {
+  //   Message.player(player, "Expected -name <identifier>");
+  //   return;
+  // }
+  // let name = args[0];
+  let name = argsAsString.replaceAll("&", "§");
+
+  let lookAt = player.getTargetEntity(4);
+  if (lookAt === null || lookAt === undefined) {
+    Message.player(player, "You're not looking at an entity less than 4 meters away");
+    return;
+  }
+  try {
+    lookAt.setCustomName(name);
+    lookAt.setCustomNameVisible(true);
+  } catch (ex) {
+    Message.player(player, "Couldn't name entity: ", ex);
+    return;
+  }
+  // stdlib.server.selectEntities(sender, "");
+});
+
+cmdr.register("mount", (player, primary, argsAsString)=>{
+  let args = argsAsString.split(" ");
+
+  let ridersSelector: string;
+  let vehicleSelector: string;
+  let riders;
+  let vehicles;
+
+  if (args.length > 1) {
+    ridersSelector = args[0];
+    vehicleSelector = args[1];
+    riders = stdlib.server.selectEntities(player as any, ridersSelector);
+    vehicles = stdlib.server.selectEntities(player as any, vehicleSelector);
+  } else if (args.length == 1) {
+    vehicleSelector = args[0];
+    vehicles = stdlib.server.selectEntities(player as any, vehicleSelector);
+    ridersSelector = player.getName();
+    riders = stdlib.server.selectEntities(player as any, ridersSelector);
+  } else {
+    ridersSelector = player.getName();
+    riders = stdlib.server.selectEntities(player as any, ridersSelector);
+    vehicles = player.getNearbyEntities(4, 4, 4);
+  }
+
+  let minDist = Number.POSITIVE_INFINITY;
+  let currentDist = 0;
+
+  let nearestVehicle;
+  let firstRider = riders.get(0);
+
+  for (let vehicle of vehicles) {
+    currentDist = firstRider.getLocation().distance(vehicle.getLocation());
+    if (minDist > currentDist) {
+      minDist = currentDist;
+      nearestVehicle = vehicle;
+    }
+  }
+
+  if (nearestVehicle === null || nearestVehicle === undefined) {
+    Message.player(player, "No entity found");
+    return;
+  }
+
+  for (let rider of riders) {
+    if (rider.equals(nearestVehicle)) continue;
+    nearestVehicle.addPassenger(rider);
+  }
+});
+
+cmdr.register("unmount", (player, primary, argsAsString)=>{
+  let veh = player.getVehicle();
+  if (veh === null || veh === undefined) {
+    Message.player(player, "No vehicle to eject from");
+    return;
+  }
+  veh.eject();
+});
+
+cmdr.register("target", (player, primary, argsAsString)=>{
+  let ens = player.getNearbyEntities(100, 25, 100);
+  if (ens === null || ens === undefined || ens.size() < 1) {
+    Message.player(player, "No entities found");
+    return;
+  }
+  for (let en of ens) {
+    if (en instanceof Mob) {
+      en.setTarget(player as any);
+    }
+  }
 });
