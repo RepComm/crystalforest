@@ -50,3 +50,5 @@ import "./blocks/sorter.js";
 
 //--------Paint door
 import "./entities/paintdoor.js";
+
+
