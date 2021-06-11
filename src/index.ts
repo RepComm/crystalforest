@@ -51,4 +51,5 @@ import "./blocks/sorter.js";
 //--------Paint door
 import "./entities/paintdoor.js";
 
-
+//-------AnimStand
+import "./entities/animstand.js";
