@@ -4,6 +4,9 @@ const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
 //--------World loader
 import "./setup/worlds.js";
 
+//-------Hub world setup
+import "./setup/hub.js";
+
 //--------Warp
 import "./tools/warp.js";
 
