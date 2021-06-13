@@ -5,6 +5,10 @@ const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
 const Mob = stdlib.type("org.bukkit.entity.Mob");
 const EntityType = stdlib.type("org.bukkit.entity.EntityType");
 
+const Location = stdlib.type("org.bukkit.Location");
+const IWorld = stdlib.type("org.bukkit.World");
+type WorldT = InstanceType<typeof IWorld>;
+
 import { PseudoCmd } from "../pseudocmd.js";
 import { Persist } from "../utils/persist.js";
 import { Message } from "../utils/message.js";
@@ -103,7 +107,8 @@ cmdr.register("warpset", (player, primary, argsAsString) => {
   let dest: WarpDef = {
     x: parseFloat( pLocation.getX().toFixed(2) ),
     y: parseFloat( pLocation.getY().toFixed(2) ),
-    z: parseFloat( pLocation.getZ().toFixed(2) )
+    z: parseFloat( pLocation.getZ().toFixed(2) ),
+    world: pLocation.getWorld().getName()
   };
 
   warp.setDest(identifier, dest, false, true);
@@ -138,109 +143,39 @@ cmdr.register("warp", (player, primary, argsAsString) => {
   }
   let dest = warp.getDest(destination);
 
-  Message.player(player, "warp to", destination, dest.x, dest.y, dest.z);
+  Message.player(player, "warp to", destination, dest.x, dest.y, dest.z, dest.world);
 
   stdlib.task.timeout(()=>{
-    stdlib.server.dispatchCommand(sender, `tp ${selector} ${dest.x.toFixed(1)} ${dest.y.toFixed(1)} ${dest.z.toFixed(1)}`);
+    let ens = stdlib.server.selectEntities(sender, selector);
+
+    if (ens.size() === 0) {
+      Message.player(player, "No entities to warp");
+      return;
+    }
+
+    let world: WorldT;
+    if (!dest.world) {
+      world = ens.get(0).getWorld();
+    } else {
+      world = stdlib.server.getWorld(dest.world);
+    }
+
+    if (world === null) {
+      Message.player(player, `Could not warp selected entities to destination:\nworld "${dest.world}" is not loaded.\nTell your administrator to add world "${dest.world}" to the persistence world loader JSON file`);
+      return;
+    }
+
+    let loc = new Location (world, dest.x, dest.y, dest.z);
+
+    for (let en of ens) {
+      en.teleport(loc);
+    }
+
+    // stdlib.server.dispatchCommand(sender, `tp ${selector} ${dest.x.toFixed(1)} ${dest.y.toFixed(1)} ${dest.z.toFixed(1)}`);
   }, 1);
 });
 
 cmdr.register("warplist", (player, primary, argsAsString)=>{
   let msg = warp.getDestList().join("\n");
   Message.player(player, msg);
-});
-
-cmdr.register("name", (player, primary, argsAsString)=>{
-  // let args = argsAsString.split(" ");
-  // if (args.length < 1) {
-  //   Message.player(player, "Expected -name <identifier>");
-  //   return;
-  // }
-  // let name = args[0];
-  let name = argsAsString.replaceAll("&", "§");
-
-  let lookAt = player.getTargetEntity(4);
-  if (lookAt === null || lookAt === undefined) {
-    Message.player(player, "You're not looking at an entity less than 4 meters away");
-    return;
-  }
-  try {
-    lookAt.setCustomName(name);
-    lookAt.setCustomNameVisible(true);
-  } catch (ex) {
-    Message.player(player, "Couldn't name entity: ", ex);
-    return;
-  }
-  // stdlib.server.selectEntities(sender, "");
-});
-
-cmdr.register("mount", (player, primary, argsAsString)=>{
-  let args = argsAsString.split(" ");
-
-  let ridersSelector: string;
-  let vehicleSelector: string;
-  let riders;
-  let vehicles;
-
-  if (args.length > 1) {
-    ridersSelector = args[0];
-    vehicleSelector = args[1];
-    riders = stdlib.server.selectEntities(player as any, ridersSelector);
-    vehicles = stdlib.server.selectEntities(player as any, vehicleSelector);
-  } else if (args.length == 1) {
-    vehicleSelector = args[0];
-    vehicles = stdlib.server.selectEntities(player as any, vehicleSelector);
-    ridersSelector = player.getName();
-    riders = stdlib.server.selectEntities(player as any, ridersSelector);
-  } else {
-    ridersSelector = player.getName();
-    riders = stdlib.server.selectEntities(player as any, ridersSelector);
-    vehicles = player.getNearbyEntities(4, 4, 4);
-  }
-
-  let minDist = Number.POSITIVE_INFINITY;
-  let currentDist = 0;
-
-  let nearestVehicle;
-  let firstRider = riders.get(0);
-
-  for (let vehicle of vehicles) {
-    currentDist = firstRider.getLocation().distance(vehicle.getLocation());
-    if (minDist > currentDist) {
-      minDist = currentDist;
-      nearestVehicle = vehicle;
-    }
-  }
-
-  if (nearestVehicle === null || nearestVehicle === undefined) {
-    Message.player(player, "No entity found");
-    return;
-  }
-
-  for (let rider of riders) {
-    if (rider.equals(nearestVehicle)) continue;
-    nearestVehicle.addPassenger(rider);
-  }
-});
-
-cmdr.register("unmount", (player, primary, argsAsString)=>{
-  let veh = player.getVehicle();
-  if (veh === null || veh === undefined) {
-    Message.player(player, "No vehicle to eject from");
-    return;
-  }
-  veh.eject();
-});
-
-cmdr.register("target", (player, primary, argsAsString)=>{
-  let ens = player.getNearbyEntities(100, 25, 100);
-  if (ens === null || ens === undefined || ens.size() < 1) {
-    Message.player(player, "No entities found");
-    return;
-  }
-  for (let en of ens) {
-    if (en instanceof Mob) {
-      en.setTarget(player as any);
-    }
-  }
 });

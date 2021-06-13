@@ -1,6 +1,12 @@
 
 const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
 
+//--------World loader
+import "./setup/worlds.js";
+
+//--------Warp
+import "./tools/warp.js";
+
 const GameMode = stdlib.type("org.bukkit.GameMode");
 
 //--------Any player sets day when sleep
@@ -25,25 +31,14 @@ cmdr.register("b", (player, primary, args) => {
   }
 });
 
-//--------Warp
-import "./warp/warp.js";
+//--------mount
+import "./tools/mount.js";
+
+//--------name
+import "./tools/name.js";
 
 //--------Icarus
 import "./icarus.js";
-
-
-//--------Sentry
-import { SentryManager } from "./sentry.js";
-const sentries = new SentryManager();
-
-stdlib.command({
-  name: "sentry",
-  execute: (sender, ...args) => {
-    let player = sender as any;
-    player.sendRawMessage(`Creating sentry ${args.join(" ")}`);
-    sentries.create(player.getLocation(), player.getName());
-  }
-});
 
 //--------Sorter Hopper
 import "./blocks/sorter.js";
