@@ -7,6 +7,7 @@ import { Depend } from "../tools/depend.js";
 const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
 
 const WorldCreator = stdlib.type("org.bukkit.WorldCreator");
+const GameMode = stdlib.type("org.bukkit.GameMode");
 
 const WORLDS_PERSIST_PATH = "world-loader";
 
@@ -28,6 +29,7 @@ export function dependOnWorldLoad (worldName: string): Promise<void> {
 interface WorldJson {
   name: string;
   enabled: boolean;
+  gamemode: string;
 }
 
 interface WorldsJson {
@@ -35,24 +37,29 @@ interface WorldsJson {
 }
 
 function loadWorld (worldName: string) {
-  let creator = new WorldCreator(worldName);
-  creator.createWorld();
-  Message.terminal(`Loaded world "${worldName}"`);
-
-  //Let dependencies know we loaded a world
-  Depend.get().satisfy( resolveDependWorldKey(worldName) );
+  try {
+    let creator = new WorldCreator(worldName);
+    creator.createWorld();
+    Message.terminal(`Loaded world "${worldName}"`);
+  
+    //Let dependencies know we loaded a world
+    Depend.get().satisfy( resolveDependWorldKey(worldName) );
+  } catch (ex) {
+    Message.terminal(`Could not load world ${worldName} due to`, ex);
+  }
 }
 
 async function main () {
   Message.terminal("Loading world persistence");
   
   Persist.get().getJson<WorldsJson>( WORLDS_PERSIST_PATH ).then((cfg)=>{
-    Message.terminal("Loaded world persistence");
+    Message.terminal("Checking which worlds to load");
+    Message.terminal("cfg =>", JSON.stringify(cfg));
 
     let worldNames = Object.keys(cfg);
     let world: WorldJson;
   
-    Message.terminal("Loading", worldNames.length, "worlds");
+    Message.terminal("Loading worlds", worldNames.join(","), "a total of", worldNames.length);
   
     for (let worldName of worldNames) {
       world = cfg[worldName];
@@ -61,6 +68,35 @@ async function main () {
         loadWorld(worldName);
       }
     }
+    
+    stdlib.event("org.bukkit.event.player.PlayerChangedWorldEvent", (evt)=>{
+      let player = evt.getPlayer();
+      if (!player) return;
+      let loc = player.getLocation();
+      if (!loc) return;
+      let world = loc.getWorld();
+      if (!world) return;
+
+      let joinedWorldName = world.getName();
+
+      if (cfg[joinedWorldName]) {
+        switch (cfg[joinedWorldName].gamemode) {
+          case "creative":
+            player.setGameMode(GameMode.CREATIVE);
+            break;
+          case "survival":
+            player.setGameMode(GameMode.SURVIVAL);
+            break;
+          case "adventure":
+            player.setGameMode(GameMode.ADVENTURE);
+            break;
+          default:
+            break;
+        }
+      }
+      
+    });
+    
   }, (reason)=>{
     Message.terminal("Couldn't load worlds due to", reason);
   });

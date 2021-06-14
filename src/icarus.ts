@@ -54,7 +54,8 @@ stdlib.event("org.bukkit.event.player.PlayerMoveEvent", (evt) => {
   if (vel.length() < MIN_ELYTRA_CLIMB_SPEED) {
     let glideVel = player.getLocation().getDirection().multiply(0.015);
 
-    player.spawnParticle(IcarusBootsParticle, player.getLocation(), 1);
+    player.getWorld().spawnParticle(IcarusBootsParticle, player.getLocation(), 1);
+    // player.spawnParticle(IcarusBootsParticle, player.getLocation(), 1);
 
     vel.add(glideVel);
     player.setVelocity(vel);

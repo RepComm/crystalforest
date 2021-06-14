@@ -21,6 +21,7 @@ export class Depend {
 
   private constructor () {
     this.satisfieds = new Set();
+    this.dependents = new Set();
   }
   setSatisfied (dep: Dependency): this {
     //call the promise resolve
