@@ -72,6 +72,18 @@ export const WorldHelper = {
       }
       _resolve(true);
     });
+  },
+  getLoadedWorldNames (): string[] {
+    let worlds = stdlib.server.getWorlds();
+
+    let result = new Array<string>(worlds.size());
+
+    let i=0;
+    for (let world of worlds) {
+      result[i] = world.getName();
+      i++;
+    }
+    return result;
   }
 };
 
@@ -83,8 +95,16 @@ async function main () {
     let world: WorldJson;
   
     Message.terminal(`[Worlds] Loading ${worldNames.length} worlds: ${worldNames.join(",")}`);
-  
+    
+    let loadedWorldNames = WorldHelper.getLoadedWorldNames();
+
     for (let worldName of worldNames) {
+      
+      //don't load a world if its loaded already
+      if (loadedWorldNames.includes(worldName)) {
+        Message.terminal(`[Worlds] World by id "${worldName}" is already loaded, skipping`);
+        continue;
+      }
       world = cfg[worldName];
   
       if (world.enabled) {
