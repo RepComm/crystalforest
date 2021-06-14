@@ -3,6 +3,7 @@ import { Message } from "../utils/message.js";
 import { Persist } from "../utils/persist.js";
 import { PseudoCmd } from "../pseudocmd.js";
 import { Depend } from "../tools/depend.js";
+import { FileHelper } from "../utils/filehelper.js";
 
 const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
 
@@ -30,42 +31,67 @@ interface WorldJson {
   name: string;
   enabled: boolean;
   gamemode: string;
+  playerOwner?: string;
 }
 
 interface WorldsJson {
   [key: string]: WorldJson;
 }
 
-function loadWorld (worldName: string) {
-  try {
-    let creator = new WorldCreator(worldName);
-    creator.createWorld();
-    Message.terminal(`Loaded world "${worldName}"`);
-  
-    //Let dependencies know we loaded a world
-    Depend.get().satisfy( resolveDependWorldKey(worldName) );
-  } catch (ex) {
-    Message.terminal(`Could not load world ${worldName} due to`, ex);
+const fileHelper = FileHelper.get();
+
+export const WorldHelper = {
+  containerPath: stdlib.server.getWorldContainer().toString(),
+  resolveWorldPath: (worldName: string): string=> {
+    return fileHelper.join(WorldHelper.containerPath, worldName);
+  },
+  cloneWorld: (from: string, to: string): Promise<boolean> => {
+    let fromFile = WorldHelper.resolveWorldPath(from);
+    let toFile = WorldHelper.resolveWorldPath(to);
+    return fileHelper.copy (fromFile, toFile);
+  },
+  loadWorld: (worldName: string): Promise<boolean> => {
+    return new Promise(async (_resolve, _reject)=>{
+      try {
+        let creator = new WorldCreator(worldName);
+        creator.createWorld();
+      } catch (ex) {
+        _reject(ex);
+        return;
+      }
+      _resolve(true);
+    });
+  },
+  unloadWorld: (worldName: string, save: boolean = true): Promise<boolean> => {
+    return new Promise(async (_resolve, _reject)=>{
+      try {
+        stdlib.server.unloadWorld(worldName, save);
+      } catch (ex) {
+        _reject(ex);
+        return;
+      }
+      _resolve(true);
+    });
   }
-}
+};
 
 async function main () {
-  Message.terminal("Loading world persistence");
+  Message.terminal("[Worlds] Checking which worlds to load");
   
-  Persist.get().getJson<WorldsJson>( WORLDS_PERSIST_PATH ).then((cfg)=>{
-    Message.terminal("Checking which worlds to load");
-    Message.terminal("cfg =>", JSON.stringify(cfg));
-
+  Persist.get().getJson<WorldsJson>( WORLDS_PERSIST_PATH ).then(async (cfg)=>{
     let worldNames = Object.keys(cfg);
     let world: WorldJson;
   
-    Message.terminal("Loading worlds", worldNames.join(","), "a total of", worldNames.length);
+    Message.terminal(`[Worlds] Loading ${worldNames.length} worlds: ${worldNames.join(",")}`);
   
     for (let worldName of worldNames) {
       world = cfg[worldName];
   
       if (world.enabled) {
-        loadWorld(worldName);
+        await WorldHelper.loadWorld(worldName);
+        
+        //Let dependencies know we loaded a world
+        Depend.get().satisfy( resolveDependWorldKey(worldName) );
       }
     }
     

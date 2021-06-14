@@ -98,11 +98,17 @@ cmdr.register("warpset", (player, primary, argsAsString) => {
   let args = argsAsString.split(" ");
 
   if (args.length < 1) {
-    player.sendRawMessage("Expected : -warpset <identifier> [x] [y] [z] [world]");
+    Message.player(player, "Expected : -warpset <identifier> [x] [y] [z] [world]");
     return;
   }
 
   let identifier = args[0];
+
+  if (!identifier) {
+    Message.player(player, `Invalid warp name ${identifier}`);
+    return;
+  }
+
   let pLocation = player.getLocation();
   let dest: WarpDef = {
     x: parseFloat( pLocation.getX().toFixed(2) ),
@@ -113,7 +119,7 @@ cmdr.register("warpset", (player, primary, argsAsString) => {
 
   warp.setDest(identifier, dest, false, true);
 
-  player.sendRawMessage(`Set warp ${identifier} to ${dest.x.toFixed(1)} ${dest.y.toFixed(1)} ${dest.z.toFixed(1)}`);
+  Message.player(player, `Set warp ${identifier} to ${dest.x.toFixed(1)} ${dest.y.toFixed(1)} ${dest.z.toFixed(1)}`);
 });
 
 //warp <selector> <destination>
@@ -170,8 +176,6 @@ cmdr.register("warp", (player, primary, argsAsString) => {
     for (let en of ens) {
       en.teleport(loc);
     }
-
-    // stdlib.server.dispatchCommand(sender, `tp ${selector} ${dest.x.toFixed(1)} ${dest.y.toFixed(1)} ${dest.z.toFixed(1)}`);
   }, 1);
 });
 
