@@ -64,7 +64,7 @@ export class LevelUp {
       if (!this.playerDataSaved) {
         this.save();
       }
-    }, 1000*60*4);
+    }, 1000*60);
 
     let cmdr = PseudoCmd.get();
     cmdr.register("lvl", (player, primary, argsAsString)=>{
@@ -79,6 +79,16 @@ export class LevelUp {
       }
       Message.player(player, `You are level ${data.level}`);
     });
+
+    cmdr.register("lvl+", (player, primary, argsAsString)=>{
+      if (!player.isOp()) {
+        Message.player(player, `Sorry, you are not OP and cannot use this command!`);
+        return;
+      }
+      let playerName = player.getName();
+
+      this.levelIncrease(playerName, 1);
+    });
   }
   levelIncrease (name: string, levels: number) {
     let data = this.playerData.get(name);
@@ -86,7 +96,7 @@ export class LevelUp {
 
     data.level += levels;
 
-    let intLevels = Math.floor(levels);
+    let intLevels = Math.floor(data.level);
 
     if (intLevels > 0) {
       let player = stdlib.server.getPlayer(name);
@@ -94,6 +104,8 @@ export class LevelUp {
         Message.player(player, `&6Congrats&r, you're now level ${intLevels}!`);
       }
     }
+
+    this.playerDataSaved = false;
   }
   setPlayerData (name: string, data: PlayerDataJson) {
     this.playerData.set(name, data);
@@ -143,8 +155,8 @@ export class LevelUp {
 
       Message.terminal("Saving LevelUp player data...");
 
-      await Persist.get().setJson<LevelUpDataJson>(LEVEL_UP_PERSIST_PATH, this.persistJson);
       this.playerDataSaved = true;
+      await Persist.get().setJson<LevelUpDataJson>(LEVEL_UP_PERSIST_PATH, this.persistJson);
 
       Message.terminal("Saved LevelUp player data");
 

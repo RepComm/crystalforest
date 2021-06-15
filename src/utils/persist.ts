@@ -59,39 +59,38 @@ export class Persist {
   }
   resolve(fpath: string): string {
     return Paths.get(
-        stdlib.plugin.getDataFolder().getAbsolutePath(),
-        "persist",
-        fpath + ".json"
-      ).toString();
+      stdlib.plugin.getDataFolder().getAbsolutePath(),
+      "persist",
+      fpath + ".json"
+    ).toString();
   }
   async setData(fpath: string, data: Uint8Array): Promise<boolean> {
     return new Promise(async (_resolve, _reject) => {
-      console.log("fpath", fpath);
+      try {
+        fpath = this.resolve(fpath);
+        // console.log("abs fpath", fpath);
 
-      fpath = this.resolve(fpath);
-      console.log("abs fpath", fpath);
+        let helper = FileHelper.get();
 
-      let helper = FileHelper.get();
+        await helper.create(fpath);
+        // console.log("create abs fpath");
 
-      await helper.create(fpath);
-      console.log("create abs fpath");
+        // console.log("Writting buf");
 
-      console.log("Writting buf");
-
-      await helper.write(fpath, data);
-      console.log("wrote buf");
-
+        await helper.write(fpath, data);
+        // console.log("wrote buf");
+      } catch (ex) {
+        _reject(ex);
+        return;
+      }
+      _resolve(true);
     });
   }
   async setString(fpath: string, data: string): Promise<boolean> {
-    return new Promise(async (_resolve, _reject) => {
-      _resolve(this.setData(fpath, stringToUint8Array(data)));
-    });
+    return this.setData(fpath, stringToUint8Array(data));
   }
   async setJson<T>(fpath: string, data: T): Promise<boolean> {
-    return new Promise(async (_resolve, _reject) => {
-      _resolve(this.setString(fpath, JSON.stringify(data)));
-    });
+    return this.setString(fpath, JSON.stringify(data));
   }
   async getData(fpath: string): Promise<Uint8Array> {
     return new Promise(async (_resolve, _reject) => {

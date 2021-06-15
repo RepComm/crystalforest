@@ -10,6 +10,9 @@ import "./setup/hub.js";
 //--------Warp
 import "./tools/warp.js";
 
+//-------Home
+import "./setup/home.js";
+
 const GameMode = stdlib.type("org.bukkit.GameMode");
 
 //--------Any player sets day when sleep

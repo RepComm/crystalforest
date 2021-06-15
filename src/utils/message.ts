@@ -49,6 +49,20 @@ export const Message = {
       }
     }, 1);
   },
+  /**Broadcast a message to all OPed players
+   * @param msgs 
+   */
+  ops: (...msgs: any[]): void => {
+    stdlib.task.timeout(()=>{
+      let msg = Message.filter( Message.stringify(msgs) );
+      let players = stdlib.server.getOnlinePlayers();
+
+      for (let player of players) {
+        if (!player.isOp()) continue;
+        player.sendRawMessage( msg );
+      }
+    }, 1);
+  },
   /**Tell every connected player a message
    * @param msgs objects to encode as a message
    */

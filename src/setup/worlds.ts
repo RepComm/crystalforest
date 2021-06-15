@@ -16,12 +16,12 @@ const WORLDS_PERSIST_PATH = "world-loader";
 export const WORLD_TS_DEPEND_NS = "world-loader";
 
 /**Turn a world name into the dependency key that world.ts will satisfied upon loading*/
-export function resolveDependWorldKey (worldName: string): string {
+export function resolveDependWorldKey(worldName: string): string {
   return `${WORLD_TS_DEPEND_NS}-${worldName}`;
 }
 
 /**Wait on a world to load, convenience function*/
-export function dependOnWorldLoad (worldName: string): Promise<void> {
+export function dependOnWorldLoad(worldName: string): Promise<void> {
   return Depend.get().depend(
     resolveDependWorldKey(worldName)
   );
@@ -40,21 +40,26 @@ interface WorldsJson {
 
 const fileHelper = FileHelper.get();
 
+let worldLoaderConfig: WorldsJson = {};
+
+const persit = Persist.get();
+
 export const WorldHelper = {
   containerPath: stdlib.server.getWorldContainer().toString(),
-  resolveWorldPath: (worldName: string): string=> {
+  resolveWorldPath(worldName: string): string {
     return fileHelper.join(WorldHelper.containerPath, worldName);
   },
-  cloneWorld: (from: string, to: string): Promise<boolean> => {
+  cloneWorld(from: string, to: string): Promise<boolean> {
     let fromFile = WorldHelper.resolveWorldPath(from);
     let toFile = WorldHelper.resolveWorldPath(to);
-    return fileHelper.copy (fromFile, toFile);
+    return fileHelper.copy(fromFile, toFile, true);
   },
-  loadWorld: (worldName: string): Promise<boolean> => {
-    return new Promise(async (_resolve, _reject)=>{
+  loadWorld(worldName: string): Promise<boolean> {
+    return new Promise(async (_resolve, _reject) => {
       try {
         let creator = new WorldCreator(worldName);
         creator.createWorld();
+        Message.terminal(`[Worlds] Loaded world ${worldName}`);
       } catch (ex) {
         _reject(ex);
         return;
@@ -62,8 +67,8 @@ export const WorldHelper = {
       _resolve(true);
     });
   },
-  unloadWorld: (worldName: string, save: boolean = true): Promise<boolean> => {
-    return new Promise(async (_resolve, _reject)=>{
+  unloadWorld(worldName: string, save: boolean = true): Promise<boolean> {
+    return new Promise(async (_resolve, _reject) => {
       try {
         stdlib.server.unloadWorld(worldName, save);
       } catch (ex) {
@@ -73,82 +78,113 @@ export const WorldHelper = {
       _resolve(true);
     });
   },
-  getLoadedWorldNames (): string[] {
+  getLoadedWorldNames(): string[] {
     let worlds = stdlib.server.getWorlds();
 
     let result = new Array<string>(worlds.size());
 
-    let i=0;
+    let i = 0;
     for (let world of worlds) {
       result[i] = world.getName();
       i++;
     }
     return result;
-  }
-};
+  },
+  worldDirExists(worldName: string): boolean {
+    return fileHelper.exists(WorldHelper.resolveWorldPath(worldName));
+  },
+  save(): Promise<boolean> {
+    Message.terminal(`Saving world auto-load data`);
+    return persit.setJson<WorldsJson>(WORLDS_PERSIST_PATH, worldLoaderConfig);
+  },
+  load(): Promise<boolean> {
+    return new Promise<boolean>(async (_resolve, _reject) => {
+      let data: WorldsJson;
 
-async function main () {
-  Message.terminal("[Worlds] Checking which worlds to load");
-  
-  Persist.get().getJson<WorldsJson>( WORLDS_PERSIST_PATH ).then(async (cfg)=>{
+      try {
+        data = await persit.getJson<WorldsJson>(WORLDS_PERSIST_PATH);
+      } catch (ex) {
+        _reject(ex);
+        return;
+      }
+      worldLoaderConfig = data;
+      _resolve(true);
+    });
+  },
+  isWorldAutoLoadEnabled(worldName: string): boolean {
+    return worldLoaderConfig[worldName] && worldLoaderConfig[worldName].enabled;
+  },
+  setWorldAutoLoadData(worldName: string, worldJson: WorldJson) {
+    worldLoaderConfig[worldName] = worldJson;
+    WorldHelper.save();
+  },
+  autoLoadWorlds () {
+    let cfg = worldLoaderConfig;
+
     let worldNames = Object.keys(cfg);
     let world: WorldJson;
-  
+
     Message.terminal(`[Worlds] Loading ${worldNames.length} worlds: ${worldNames.join(",")}`);
-    
+
     let loadedWorldNames = WorldHelper.getLoadedWorldNames();
 
     for (let worldName of worldNames) {
-      
       //don't load a world if its loaded already
       if (loadedWorldNames.includes(worldName)) {
         Message.terminal(`[Worlds] World by id "${worldName}" is already loaded, skipping`);
         continue;
       }
       world = cfg[worldName];
-  
+
       if (world.enabled) {
-        await WorldHelper.loadWorld(worldName);
-        
-        //Let dependencies know we loaded a world
-        Depend.get().satisfy( resolveDependWorldKey(worldName) );
+        WorldHelper.loadWorld(worldName).then((success)=>{
+          //Let dependencies know we loaded a world
+          Depend.get().satisfy(resolveDependWorldKey(worldName));
+        });
       }
     }
-    
-    stdlib.event("org.bukkit.event.player.PlayerChangedWorldEvent", (evt)=>{
-      let player = evt.getPlayer();
-      if (!player) return;
-      let loc = player.getLocation();
-      if (!loc) return;
-      let world = loc.getWorld();
-      if (!world) return;
+  }
+};
 
-      let joinedWorldName = world.getName();
+async function main() {
+  //Load persistence data
+  await WorldHelper.load();
 
-      if (cfg[joinedWorldName]) {
-        switch (cfg[joinedWorldName].gamemode) {
-          case "creative":
-            player.setGameMode(GameMode.CREATIVE);
-            break;
-          case "survival":
-            player.setGameMode(GameMode.SURVIVAL);
-            break;
-          case "adventure":
-            player.setGameMode(GameMode.ADVENTURE);
-            break;
-          default:
-            break;
-        }
-      }
-      
-    });
-    
-  }, (reason)=>{
-    Message.terminal("Couldn't load worlds due to", reason);
-  });
+  //Ensure all worlds load properly
+  WorldHelper.autoLoadWorlds();
+
+  let cfg = worldLoaderConfig;
   
+  stdlib.event("org.bukkit.event.player.PlayerChangedWorldEvent", (evt) => {
+    let player = evt.getPlayer();
+    if (!player) return;
+    let loc = player.getLocation();
+    if (!loc) return;
+    let world = loc.getWorld();
+    if (!world) return;
+
+    let joinedWorldName = world.getName();
+
+    if (cfg[joinedWorldName]) {
+      switch (cfg[joinedWorldName].gamemode) {
+        case "creative":
+          player.setGameMode(GameMode.CREATIVE);
+          break;
+        case "survival":
+          player.setGameMode(GameMode.SURVIVAL);
+          break;
+        case "adventure":
+          player.setGameMode(GameMode.ADVENTURE);
+          break;
+        default:
+          break;
+      }
+    }
+
+  });
+
   let cmdr = PseudoCmd.get();
-  cmdr.register("worldlist", (player, primary, argsAsString)=>{
+  cmdr.register("worldlist", (player, primary, argsAsString) => {
     let msg = "Loaded worlds includes:\n";
 
     let wList = stdlib.server.getWorlds();

@@ -40,13 +40,8 @@ export class FileHelper {
       }
     });
   }
-  async exists(fpath: string): Promise<boolean> {
-    return new Promise(async (_resolve, _reject) => {
-      let file = new File(fpath);
-      let result = file.exists();
-      file = null;
-      _resolve(result);
-    });
+  exists(fpath: string): boolean {
+    return new File(fpath).exists();
   }
   async write(fpath: string, data: Uint8Array): Promise<boolean> {
     return new Promise(async (_resolve, _reject) => {

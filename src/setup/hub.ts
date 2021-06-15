@@ -3,7 +3,7 @@ import { dependOnWorldLoad, WORLD_TS_DEPEND_NS } from "./worlds.js";
 
 const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
 
-const WORLD_NAME = "hub";
+const WORLD_NAME = "world-hub";
 
 async function main () {
 
