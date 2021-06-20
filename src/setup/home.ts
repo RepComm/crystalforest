@@ -7,6 +7,7 @@ import { PseudoCmd } from "../pseudocmd.js";
 import { LevelUp } from "./levelup.js";
 import { FileHelper } from "../utils/filehelper.js";
 import { WorldHelper } from "./worlds.js";
+import { getBlockMineReward } from "./pompeii.js";
 
 const levelUp = LevelUp.get();
 
@@ -16,14 +17,20 @@ const fileHelper = FileHelper.get();
 
 const ILocation = stdlib.type("org.bukkit.Location");
 
+const IPlayer = stdlib.type("org.bukkit.entity.Player");
+type PlayerT = InstanceType<typeof IPlayer>;
+
+const IInventoryType = stdlib.type("org.bukkit.event.inventory.InventoryType");
+
 export const HomeHelper = {
   homeWorldTemplate: "world-template-player",
+  homeWorldNamePrefix: "world-player-",
   isPlayerAllowedToCreateHome(name: string): boolean {
     let levelData = levelUp.getPlayerData(name);
     return levelData.level >= PLAYER_HOME_CREATE_LEVEL_REQUIREMENT;
   },
   resolvePlayerHomeName(playerName: string): string {
-    return `world-player-${playerName}`;
+    return `${HomeHelper.homeWorldNamePrefix}${playerName}`;
   },
   playerHomeExists(playerName: string): boolean {
     return WorldHelper.worldDirExists(HomeHelper.resolvePlayerHomeName(playerName));
@@ -38,7 +45,7 @@ export const HomeHelper = {
 
         WorldHelper.setWorldAutoLoadData(playerWorldId, {
           enabled: true,
-          gamemode: "survival",
+          gamemode: "creative",
           name: playerWorldId,
           playerOwner: playerName
         });
@@ -48,6 +55,35 @@ export const HomeHelper = {
         _resolve(true);
       });
     });
+  },
+  isPlayerByNameAtHome (playerName: string): boolean {
+    let player = stdlib.server.getPlayer(playerName);
+    if (!player) return false;
+
+    return player.getWorld().getName() === this.resolvePlayerHomeName(playerName);
+  },
+  isPlayerByObjectAtHome (player: PlayerT): boolean {
+    if (!player) return false;
+    let playerName = player.getName();
+    return player.getWorld().getName() === this.resolvePlayerHomeName(playerName);
+  },
+  isPlayerByNameAtAnyHome (playerName: string): boolean {
+    let player = stdlib.server.getPlayer(playerName);
+    if (!player) return false;
+    if (!player.isOnline()) return false;
+    let loc = player.getLocation();
+    let world = loc.getWorld();
+    let worldName = world.getName();
+
+    return worldName.startsWith(HomeHelper.homeWorldNamePrefix);
+  },
+  isPlayerByObjectAtAnyHome (player: PlayerT): boolean {
+    if (!player) return false;
+    if (!player.isOnline()) return false;
+    let loc = player.getLocation();
+    let world = loc.getWorld();
+    let worldName = world.getName();
+    return worldName.startsWith(HomeHelper.homeWorldNamePrefix);
   }
 };
 
@@ -103,8 +139,8 @@ async function main() {
 
         break;
       case "visit":
-        Message.player(player, `Attempting to send you home!`);
         let homeName = HomeHelper.resolvePlayerHomeName(playerName);
+        Message.player(player, `Attempting to send you home!`);
         
         let world = stdlib.server.getWorld(homeName);
         if (!world) {
@@ -123,6 +159,27 @@ async function main() {
         return;
     }
   });
+
+  stdlib.event("org.bukkit.event.block.BlockPlaceEvent", (evt)=>{
+    let player = evt.getPlayer();
+    if (!player) return;
+
+    let playerName = player.getName();
+
+    let block = evt.getBlock();
+
+    let cost = getBlockMineReward(block);
+
+    if (HomeHelper.isPlayerByObjectAtAnyHome(player)) {
+      if (levelUp.getPlayerData(playerName).level > cost) {
+        levelUp.levelSet(playerName, -cost, true);
+      } else {
+        Message.player(player, `Not enough levels to place this block, cost is ${cost.toFixed(4)} levels`);
+        evt.setCancelled(true);
+        return;
+      }
+    }
+  })
 }
 
 main();

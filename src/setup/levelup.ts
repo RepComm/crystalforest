@@ -1,10 +1,15 @@
 import { PseudoCmd } from "../pseudocmd.js";
 import { Message } from "../utils/message.js";
 import { Persist } from "../utils/persist.js";
+import { PersonalBossBars } from "./personalbossbar.js";
 
 const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
 
 const LEVEL_UP_PERSIST_PATH = "levelup";
+
+const JFloat = stdlib.type("java.lang.Float");
+
+const Sound = stdlib.type("org.bukkit.Sound");
 
 interface PlayerDataJson {
   level: number;
@@ -80,29 +85,54 @@ export class LevelUp {
       Message.player(player, `You are level ${data.level}`);
     });
 
-    cmdr.register("lvl+", (player, primary, argsAsString)=>{
+    cmdr.register("lvlset", (player, primary, argsAsString)=>{
       if (!player.isOp()) {
         Message.player(player, `Sorry, you are not OP and cannot use this command!`);
         return;
       }
       let playerName = player.getName();
 
-      this.levelIncrease(playerName, 1);
+      let amount: number;
+
+      try {
+        amount = Number.parseFloat(argsAsString);
+      } catch (ex) {
+        Message.player(player, `Format of "${argsAsString}" was not found to be a valid floating point number`);
+        return;
+      }
+
+      this.levelSet(playerName, amount);
     });
   }
-  levelIncrease (name: string, levels: number) {
-    let data = this.playerData.get(name);
+  levelSet (playerName: string, levels: number, add: boolean = false) {
+    let data = this.playerData.get(playerName);
     if (!data) return;
 
-    data.level += levels;
+    let beginLevel = Math.floor(data.level);
+    if (add) {
+      data.level += levels;
+    } else {
+      data.level = levels;
+    }
+    let endLevel = Math.floor(data.level);
 
-    let intLevels = Math.floor(data.level);
-
-    if (intLevels > 0) {
-      let player = stdlib.server.getPlayer(name);
-      if (player.isOnline()) {
-        Message.player(player, `&6Congrats&r, you're now level ${intLevels}!`);
+    let player = stdlib.server.getPlayer(playerName);
+    if (player.isOnline()) {
+      if (beginLevel < endLevel) {
+        Message.player(player, `&6Congrats&r, you're now level ${endLevel}!`);
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1, 2.0);
       }
+
+      let decimal = data.level - endLevel;
+
+      let bb = PersonalBossBars.getBossBar(playerName);
+
+      bb.setTitle(`Level ${endLevel}`);
+      bb.setProgress(decimal);
+      bb.addPlayer(player);
+
+      // player.setExp( new JFloat( decimal ) as any );
+      // player.setLevel( new JFloat(endLevel) as any );
     }
 
     this.playerDataSaved = false;
@@ -166,3 +196,4 @@ export class LevelUp {
 }
 
 LevelUp.get();
+

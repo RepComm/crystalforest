@@ -1,8 +1,10 @@
 
 const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
 
-const Player = stdlib.type("org.bukkit.entity.Player");
-type IPlayer = InstanceType<typeof Player>;
+const IPlayer = stdlib.type("org.bukkit.entity.Player");
+type PlayerT = InstanceType<typeof IPlayer>;
+
+const InventoryType = stdlib.type("org.bukkit.event.inventory.InventoryType");
 
 export interface ToString {
   (obj: any): string;
@@ -32,7 +34,7 @@ export const Message = {
    * @param player to send to
    * @param msgs objects to encode as a message
    */
-  player: (player: IPlayer, ...msgs: any[]): void => {
+  player: (player: PlayerT, ...msgs: any[]): void => {
     stdlib.task.timeout(()=>{
       player.sendRawMessage( Message.filter( Message.stringify(msgs) ) );
     }, 1);
@@ -41,7 +43,7 @@ export const Message = {
    * @param players to send the message to
    * @param msgs objects to encode as a message
    */
-  players: (players: IPlayer[], ...msgs: any[]): void => {
+  players: (players: PlayerT[], ...msgs: any[]): void => {
     stdlib.task.timeout(()=>{
       let msg = Message.filter( Message.stringify(msgs) );
       for (let player of players) {
@@ -88,3 +90,18 @@ export const Message = {
   }
 };
 
+stdlib.event("org.bukkit.event.player.AsyncPlayerChatEvent", (evt)=>{
+  evt.setMessage(
+    DefaultFilter(
+      evt.getMessage()
+    )
+  );
+});
+
+stdlib.event("org.bukkit.event.player.PlayerCommandPreprocessEvent", (evt)=>{
+  evt.setMessage(
+    DefaultFilter(
+      evt.getMessage()
+    )
+  );
+});

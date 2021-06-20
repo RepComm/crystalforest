@@ -9,6 +9,7 @@ Source code for my [grakkit enabled](https://github.com/grakkit/grakkit) mc serv
 - Message - [source](./src/utils/message.ts) - `console.log`, but for terminal, players, and broadcast
 - Depend - [source](./src/tools/depend.ts) - A simple, namespaced dependency resolver. wait on tasks to finish before running code
 - Worlds - [source](./src/setup/worlds.ts) - Helpful code for minecraft worlds (clone, resolve, load, unload, and autoloading on start)
+- Home - [source](./src/setup/home.ts) - player specific worlds, based on LevelUp, Persist, and Worlds APIs
 
 ## Blocks
 - sorter hopper - [source](./src/blocks/sorter.ts) - [specs](./docs/sorter.ts.md)
