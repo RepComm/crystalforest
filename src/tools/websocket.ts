@@ -70,10 +70,14 @@ declare class WSServerT {
   listen (listener: WSEventListener): this;
   deafen (listener: WSEventListener): this;
   pollEvents (): this;
-  start(): this;
+  start(): void;
+  stop(code: number): void;
   pushEvent(evt: WSEvent): this;
   dispatchEvent (evt: WSEvent): this;
-  
+
+
+  setReuseAddr(reuse: boolean): void;
+
   broadcast (msg: string): void;
 };
 
@@ -103,6 +107,13 @@ function dependOnPlugin (id: string): Promise<PluginT> {
   });
 }
 
+interface BridgeMessageJson {
+  type: "chat";
+
+  chatUser?: string;
+  chatMessage?: string;
+}
+
 async function main () {
   await dependOnPlugin("wscb-spigot");
   console.log("wscb-spigot loaded, creating a ws server");
@@ -115,17 +126,62 @@ async function main () {
   let wsServer = new IWSServer(port) as WSServerT;
   
   wsServer.listen((evt)=>{
-    
     if (evt.type === IWSEvent.EVENT_TYPE_CONNECT) {
       console.log("A client connected");
+
     } else if (evt.type === IWSEvent.EVENT_TYPE_MESSAGE_STRING) {
       console.log("Got message from client", evt.messageString);
+
+      let data: BridgeMessageJson;
+
+      try {
+        data = JSON.parse(evt.messageString);
+      } catch (ex) {
+        console.warn("Invalid json message received from ws", ex, evt.messageString);
+        return;
+      }
+
+      switch (data.type) {
+        case "chat":
+          if (!data.chatMessage) return;
+          stdlib.server.broadcastMessage(`[D] <${data.chatUser}> ${data.chatMessage}`);
+          break;
+        default:
+
+          break;
+      }
     }
   });
     
   console.log("Starting web socket");
+  wsServer.setReuseAddr(true);
   wsServer.start();
-    
+
+  function shutdownWebSocket () {
+    console.log("====STOPPING WS SERVER");
+    wsServer.stop(0);  
+  }
+
+  Core.hook(() => {
+    shutdownWebSocket();
+  });
+
+  stdlib.event("org.bukkit.event.server.PluginDisableEvent", (evt)=>{
+    shutdownWebSocket();
+  });
+  
+  stdlib.event("org.bukkit.event.player.AsyncPlayerChatEvent", (evt)=>{
+    if (evt.isCancelled()) return;
+    let data: BridgeMessageJson = {
+      type: "chat",
+      chatUser: evt.getPlayer().getName(),
+      chatMessage: evt.getMessage()
+    };
+
+    let json = JSON.stringify(data);
+    wsServer.broadcast(json);
+  });
+
   //Update event listeners with events from WSServer, solves cross-thread access
   stdlib.task.interval(()=>{
     wsServer.pollEvents();
