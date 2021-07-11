@@ -1,4 +1,16 @@
 
+export type XKeyed<X, Y = string> = { [k in string & Y]: X };
+
+export class PromiseMatrix {
+  map: Map<string, Promise<void>>;
+  depend (...dependencies: string[]) {
+     return Promise.all([ ...this.map.entries() ].filter((entry) => dependencies.includes(entry[0])).map(entry => entry[1]));
+  }
+  constructor (dependencies: XKeyed<Promise<void>> = {}) {
+     this.map = new Map(Object.entries(dependencies));
+  }
+}
+
 interface ResolverFunction {
   (value: void | PromiseLike<void>): void;
 }

@@ -1,5 +1,5 @@
 
-import { dependOnWorldLoad, WORLD_TS_DEPEND_NS } from "./worlds.js";
+import { dependOnWorldLoad } from "./worlds.js";
 
 const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
 

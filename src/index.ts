@@ -37,9 +37,11 @@ import "./blocks/sorter.js";
 //--------Paint door
 import "./entities/paintdoor.js";
 
+// import "./tools/imagesampler.js";
+
 //-------AnimStand
 // import "./entities/animstand.js";
 
 //-------WebSocket test
 //Currently broken
-// import "./java/websocket/websocket.js";
+import "./tools/websocket.js";
