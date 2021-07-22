@@ -1,5 +1,5 @@
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 const Paths = stdlib.type("java.nio.file.Paths");
 const File = stdlib.type("java.io.File");

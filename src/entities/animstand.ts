@@ -1,5 +1,5 @@
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 import { PseudoCmd } from "../pseudocmd.js";
 import { Track, TrackJson } from "../utils/anim.js";
@@ -265,7 +265,8 @@ function test () {
     for (let [uuid, animstand] of allAnimStands) {
       if (animstand.getPlayState() === "paused") continue;
 
-      en = stdlib.server.getEntity(IUUID.fromString(uuid));
+      //@ts-ignore
+      en = server.getEntity(IUUID.fromString(uuid));
       if (!en) continue;
 
       if (!animstand.hasClip()) continue;

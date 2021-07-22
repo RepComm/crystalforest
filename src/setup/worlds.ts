@@ -5,7 +5,7 @@ import { PseudoCmd } from "../pseudocmd.js";
 import { Depend } from "../tools/depend.js";
 import { FileHelper } from "../utils/filehelper.js";
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 const WorldCreator = stdlib.type("org.bukkit.WorldCreator");
 const GameMode = stdlib.type("org.bukkit.GameMode");
@@ -45,7 +45,7 @@ let worldLoaderConfig: WorldsJson = {};
 const persit = Persist.get();
 
 export const WorldHelper = {
-  containerPath: stdlib.server.getWorldContainer().toString(),
+  containerPath: server.getWorldContainer().toString(),
   resolveWorldPath(worldName: string): string {
     return fileHelper.join(WorldHelper.containerPath, worldName);
   },
@@ -70,7 +70,7 @@ export const WorldHelper = {
   unloadWorld(worldName: string, save: boolean = true): Promise<boolean> {
     return new Promise(async (_resolve, _reject) => {
       try {
-        stdlib.server.unloadWorld(worldName, save);
+        server.unloadWorld(worldName, save);
       } catch (ex) {
         _reject(ex);
         return;
@@ -79,7 +79,7 @@ export const WorldHelper = {
     });
   },
   getLoadedWorldNames(): string[] {
-    let worlds = stdlib.server.getWorlds();
+    let worlds = server.getWorlds();
 
     let result = new Array<string>(worlds.size());
 
@@ -187,7 +187,7 @@ async function main() {
   cmdr.register("worldlist", (player, primary, argsAsString) => {
     let msg = "Loaded worlds includes:\n";
 
-    let wList = stdlib.server.getWorlds();
+    let wList = server.getWorlds();
     for (let w of wList) {
       msg += w.getName() + "\n";
     }

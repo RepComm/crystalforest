@@ -1,5 +1,5 @@
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 const Player = stdlib.type("org.bukkit.entity.Player");
 const GameMode = stdlib.type("org.bukkit.GameMode");

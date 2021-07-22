@@ -1,5 +1,5 @@
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 import { PseudoCmd } from "../pseudocmd.js";
 import { Message } from "../utils/message.js";
@@ -17,16 +17,16 @@ cmdr.register("mount", (player, primary, argsAsString)=>{
   if (args.length > 1) {
     ridersSelector = args[0];
     vehicleSelector = args[1];
-    riders = stdlib.server.selectEntities(player as any, ridersSelector);
-    vehicles = stdlib.server.selectEntities(player as any, vehicleSelector);
+    riders = server.selectEntities(player as any, ridersSelector);
+    vehicles = server.selectEntities(player as any, vehicleSelector);
   } else if (args.length == 1) {
     vehicleSelector = args[0];
-    vehicles = stdlib.server.selectEntities(player as any, vehicleSelector);
+    vehicles = server.selectEntities(player as any, vehicleSelector);
     ridersSelector = player.getName();
-    riders = stdlib.server.selectEntities(player as any, ridersSelector);
+    riders = server.selectEntities(player as any, ridersSelector);
   } else {
     ridersSelector = player.getName();
-    riders = stdlib.server.selectEntities(player as any, ridersSelector);
+    riders = server.selectEntities(player as any, ridersSelector);
     vehicles = player.getNearbyEntities(4, 4, 4);
   }
 

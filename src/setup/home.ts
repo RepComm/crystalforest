@@ -1,5 +1,5 @@
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 import { Message } from "../utils/message.js";
 import { Persist } from "../utils/persist.js";
@@ -56,19 +56,19 @@ export const HomeHelper = {
       });
     });
   },
-  isPlayerByNameAtHome (playerName: string): boolean {
-    let player = stdlib.server.getPlayer(playerName);
+  isPlayerByNameAtHome(playerName: string): boolean {
+    let player = server.getPlayer(playerName);
     if (!player) return false;
 
     return player.getWorld().getName() === this.resolvePlayerHomeName(playerName);
   },
-  isPlayerByObjectAtHome (player: PlayerT): boolean {
+  isPlayerByObjectAtHome(player: PlayerT): boolean {
     if (!player) return false;
     let playerName = player.getName();
     return player.getWorld().getName() === this.resolvePlayerHomeName(playerName);
   },
-  isPlayerByNameAtAnyHome (playerName: string): boolean {
-    let player = stdlib.server.getPlayer(playerName);
+  isPlayerByNameAtAnyHome(playerName: string): boolean {
+    let player = server.getPlayer(playerName);
     if (!player) return false;
     if (!player.isOnline()) return false;
     let loc = player.getLocation();
@@ -77,7 +77,7 @@ export const HomeHelper = {
 
     return worldName.startsWith(HomeHelper.homeWorldNamePrefix);
   },
-  isPlayerByObjectAtAnyHome (player: PlayerT): boolean {
+  isPlayerByObjectAtAnyHome(player: PlayerT): boolean {
     if (!player) return false;
     if (!player.isOnline()) return false;
     let loc = player.getLocation();
@@ -87,7 +87,7 @@ export const HomeHelper = {
   }
 };
 
-type HomeSubCommand = "help" | "create"|"visit";
+type HomeSubCommand = "help" | "create" | "visit";
 const HomeSubCommands: Array<HomeSubCommand> = [
   "help", //command help
   "create", //create a home
@@ -141,8 +141,8 @@ async function main() {
       case "visit":
         let homeName = HomeHelper.resolvePlayerHomeName(playerName);
         Message.player(player, `Attempting to send you home!`);
-        
-        let world = stdlib.server.getWorld(homeName);
+
+        let world = server.getWorld(homeName);
         if (!world) {
           Message.player(player, `It looks like your world isn't loaded, or possible isn't created yet. If you have a world already, please notify staff!`);
           return;
@@ -160,7 +160,7 @@ async function main() {
     }
   });
 
-  stdlib.event("org.bukkit.event.block.BlockPlaceEvent", (evt)=>{
+  stdlib.event("org.bukkit.event.block.BlockPlaceEvent", (evt) => {
     let player = evt.getPlayer();
     if (!player) return;
 

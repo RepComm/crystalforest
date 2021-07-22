@@ -3,7 +3,7 @@ import { Message } from "../utils/message.js";
 import { Persist } from "../utils/persist.js";
 import { PersonalBossBars } from "./personalbossbar.js";
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 const LEVEL_UP_PERSIST_PATH = "levelup";
 
@@ -54,7 +54,7 @@ export class LevelUp {
     });
 
     //add players on plugin reload
-    let players = stdlib.server.getOnlinePlayers();
+    let players = server.getOnlinePlayers();
     for (let player of players) {
       let name = player.getName();
       if (!name) return;
@@ -116,7 +116,7 @@ export class LevelUp {
     }
     let endLevel = Math.floor(data.level);
 
-    let player = stdlib.server.getPlayer(playerName);
+    let player = server.getPlayer(playerName);
     if (player.isOnline()) {
       if (beginLevel < endLevel) {
         Message.player(player, `&6Congrats&r, you're now level ${endLevel}!`);

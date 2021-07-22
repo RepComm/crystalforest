@@ -1,7 +1,7 @@
 
 import { dependOnWorldLoad } from "./worlds.js";
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 const WORLD_NAME = "world-hub";
 

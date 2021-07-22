@@ -5,7 +5,7 @@ import { HomeHelper } from "./home.js";
 import { LevelUp } from "./levelup.js";
 import { dependOnWorldLoad, WorldHelper, WORLD_TS_DEPEND_NS } from "./worlds.js";
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 const JObject = stdlib.type("java.lang.Object");
 type IJObject = InstanceType<typeof JObject>;
@@ -95,7 +95,7 @@ async function main() {
 
   console.log("Pompeii world was loaded, starting setup");
 
-  let worldPompeii = stdlib.server.getWorld(WORLD_NAME);
+  let worldPompeii = server.getWorld(WORLD_NAME);
 
   let lvlup = LevelUp.get();
 

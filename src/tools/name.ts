@@ -2,7 +2,7 @@
 import { Message } from "../utils/message.js";
 import { PseudoCmd } from "../pseudocmd.js";
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 let cmdr = PseudoCmd.get();
 

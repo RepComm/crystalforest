@@ -1,5 +1,5 @@
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 let isEnabled = false;
 /**
@@ -7,11 +7,12 @@ let isEnabled = false;
  */
 function onAnyBed (evt) {
   let name = evt.getPlayer().getName();
-  stdlib.server.broadcastMessage(`Player ${name} went to sleep, it will be day soon.`);
-  let sender = stdlib.server.getConsoleSender();
+
+  server.broadcastMessage(`Player ${name} went to sleep, it will be day soon.`);
+  let sender = server.getConsoleSender();
 
   stdlib.task.timeout(()=>{
-    stdlib.server.dispatchCommand(sender, "time set 23500");
+    server.dispatchCommand(sender, "time set 23500");
   }, 20*4);
 }
 

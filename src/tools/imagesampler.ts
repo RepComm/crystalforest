@@ -1,7 +1,7 @@
 import { PseudoCmd } from "../pseudocmd.js";
 import { Message } from "../utils/message.js";
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 const IBufferedImage = stdlib.type("java.awt.image.BufferedImage");
 type BufferedImageT = InstanceType<typeof IBufferedImage>;

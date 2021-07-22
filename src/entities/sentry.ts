@@ -1,5 +1,5 @@
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 const ISkeleton = stdlib.type("org.bukkit.entity.Skeleton");
 type SkeletonT = InstanceType<typeof ISkeleton>;

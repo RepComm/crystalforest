@@ -1,6 +1,6 @@
 
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 const Mob = stdlib.type("org.bukkit.entity.Mob");
 const EntityType = stdlib.type("org.bukkit.entity.EntityType");
@@ -14,7 +14,7 @@ import { Persist } from "../utils/persist.js";
 import { Message } from "../utils/message.js";
 
 let cmdr = PseudoCmd.get();
-let sender = stdlib.server.getConsoleSender();
+let sender = server.getConsoleSender();
 
 interface WarpDef {
   x: number;
@@ -152,7 +152,7 @@ cmdr.register("warp", (player, primary, argsAsString) => {
   Message.player(player, "warp to", destination, dest.x, dest.y, dest.z, dest.world);
 
   stdlib.task.timeout(()=>{
-    let ens = stdlib.server.selectEntities(sender, selector);
+    let ens = server.selectEntities(sender, selector);
 
     if (ens.size() === 0) {
       Message.player(player, "No entities to warp");
@@ -163,7 +163,7 @@ cmdr.register("warp", (player, primary, argsAsString) => {
     if (!dest.world) {
       world = ens.get(0).getWorld();
     } else {
-      world = stdlib.server.getWorld(dest.world);
+      world = server.getWorld(dest.world);
     }
 
     if (world === null) {

@@ -1,5 +1,5 @@
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 const IBossBar = stdlib.type("org.bukkit.boss.BossBar");
 type BossBarT = InstanceType<typeof IBossBar>;
@@ -23,7 +23,7 @@ export const PersonalBossBars = {
     if (playerName) {
       PersonalBossBars.populateSingle(playerName);
     } else {
-      let players = stdlib.server.getOnlinePlayers();
+      let players = server.getOnlinePlayers();
       let playerName: string;
 
       for (let player of players) {
@@ -50,7 +50,7 @@ export const PersonalBossBars = {
   },
   /**Ensure a specific online player has a boss bar setup*/
   populateSingle(playerName: string): BossBarT {
-    let player = stdlib.server.getPlayer(playerName);
+    let player = server.getPlayer(playerName);
     if (!player.isOnline()) return;
 
     if (PersonalBossBars.allPersonalBossBars.has(playerName)) return;
@@ -59,7 +59,7 @@ export const PersonalBossBars = {
 
     let ns = PersonalBossBars.getNamespace(playerName);
 
-    bossbar = stdlib.server.getBossBar(ns);
+    bossbar = server.getBossBar(ns);
 
     if (!bossbar) {
 
@@ -67,7 +67,7 @@ export const PersonalBossBars = {
       let bbStyle = IBossBarStyle.SOLID;
       let bbFlags: BossBarFlagT[] = [];
 
-      bossbar = stdlib.server.createBossBar(ns, playerName, bbColor, bbStyle, ...bbFlags);
+      bossbar = server.createBossBar(ns, playerName, bbColor, bbStyle, ...bbFlags);
     }
 
     PersonalBossBars.allPersonalBossBars.set(playerName, bossbar);
@@ -76,7 +76,7 @@ export const PersonalBossBars = {
   /**Removes boss bars for player that aren't online*/
   clean() {
     for (let [playerName, bossbar] of PersonalBossBars.allPersonalBossBars) {
-      let player = stdlib.server.getPlayer(playerName);
+      let player = server.getPlayer(playerName);
       if (!player || player.isOnline()) {
         PersonalBossBars.removeBossBar(playerName);
       }
@@ -89,28 +89,28 @@ export const PersonalBossBars = {
     bossbar.removeAll();
     PersonalBossBars.allPersonalBossBars.delete(playerName);
     bossbar = null;
-    stdlib.server.removeBossBar(ns);
+    server.removeBossBar(ns);
   },
   show(...playerNames: string[]) {
     let player: PlayerT;
     for (let playerName of playerNames) {
-      player = stdlib.server.getPlayer(playerName);
+      player = server.getPlayer(playerName);
       if (!player || !player.isOnline()) continue;
 
       let bossbar = PersonalBossBars.getBossBar(playerName);
 
-      bossbar.addPlayer(stdlib.server.getPlayer(playerName));
+      bossbar.addPlayer(server.getPlayer(playerName));
     }
   },
   hide(...playerNames: string[]) {
     let player: PlayerT;
     for (let playerName of playerNames) {
-      player = stdlib.server.getPlayer(playerName);
+      player = server.getPlayer(playerName);
       if (!player || !player.isOnline()) continue;
 
       let bossbar = PersonalBossBars.getBossBar(playerName);
 
-      bossbar.removePlayer(stdlib.server.getPlayer(playerName));
+      bossbar.removePlayer(server.getPlayer(playerName));
     }
   },
   count(): number {

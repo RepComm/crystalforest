@@ -1,5 +1,7 @@
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
+
+/*
 
 //--------World loader
 import "./setup/worlds.js";
@@ -44,4 +46,11 @@ import "./entities/paintdoor.js";
 
 //-------WebSocket test
 //Currently broken
-import "./tools/websocket.js";
+// import "./tools/websocket.js";
+
+//-------TCP Socket test
+
+}
+*/
+
+import "./tools/socket.js";

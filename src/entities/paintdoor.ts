@@ -1,7 +1,7 @@
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
-let sender = stdlib.server.getConsoleSender();
+let sender = server.getConsoleSender();
 
 import { Message } from "../utils/message.js";
 import { Persist } from "../utils/persist.js";
@@ -116,7 +116,6 @@ stdlib.event("org.bukkit.event.hanging.HangingBreakEvent", (evt) => {
 });
 
 import { PseudoCmd } from "../pseudocmd.js";
-import { resolve } from "node:path";
 let cmdr = PseudoCmd.get();
 
 function doorToogle(door: PaintDoor) {
@@ -138,7 +137,7 @@ function doorToogle(door: PaintDoor) {
   let y = loc.getY().toFixed(0);
   let z = loc.getZ().toFixed(0);
 
-  stdlib.server.dispatchCommand(sender, `playsound minecraft:entity.minecart.riding master @a ${x} ${y} ${z} 10 0.2`);
+  server.dispatchCommand(sender, `playsound minecraft:entity.minecart.riding master @a ${x} ${y} ${z} 10 0.2`);
 }
 
 cmdr.register("door", (player, primary, args) => {

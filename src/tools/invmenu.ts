@@ -1,7 +1,7 @@
 
 
 // const stdlib = require("@grakkit/server");
-import * as stdlib from "@grakkit/server";
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 const IPlayer = stdlib.type("org.bukkit.entity.Player");
 type PlayerT = InstanceType<typeof IPlayer>;

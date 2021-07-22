@@ -1,5 +1,5 @@
 
-const stdlib: typeof import("@grakkit/server") = require("@grakkit/server");
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 const IPlayer = stdlib.type("org.bukkit.entity.Player");
 type PlayerT = InstanceType<typeof IPlayer>;
@@ -57,7 +57,7 @@ export const Message = {
   ops: (...msgs: any[]): void => {
     stdlib.task.timeout(()=>{
       let msg = Message.filter( Message.stringify(msgs) );
-      let players = stdlib.server.getOnlinePlayers();
+      let players = server.getOnlinePlayers();
 
       for (let player of players) {
         if (!player.isOp()) continue;
@@ -70,7 +70,7 @@ export const Message = {
    */
   broadcast: (...msgs: any[]): void => {
     stdlib.task.timeout(()=>{
-      stdlib.server.broadcastMessage(Message.filter( Message.stringify( msgs ) ));
+      server.broadcastMessage(Message.filter( Message.stringify( msgs ) ));
     }, 1);
   },
   /**Tells the console a message

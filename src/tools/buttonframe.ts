@@ -1,7 +1,6 @@
 
 
-// import * as stdlib from "@grakkit/server";
-const stdlib = require('@grakkit/server');
+const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
 const ILocation = stdlib.type("org.bukkit.Location");
 type LocationT = InstanceType<typeof ILocation>;
