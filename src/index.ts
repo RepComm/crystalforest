@@ -1,8 +1,6 @@
 
 const stdlib: typeof import("@grakkit/stdlib-paper") = require("@grakkit/stdlib-paper");
 
-/*
-
 //--------World loader
 import "./setup/worlds.js";
 
@@ -45,12 +43,5 @@ import "./entities/paintdoor.js";
 // import "./entities/animstand.js";
 
 //-------WebSocket test
-//Currently broken
-// import "./tools/websocket.js";
+import "./tools/crystaloscillator.js";
 
-//-------TCP Socket test
-
-}
-*/
-
-import "./tools/socket.js";
